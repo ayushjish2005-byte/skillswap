@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Error — SkillSwap{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+  <i class="bi bi-emoji-frown fs-1 text-muted"></i>
+  <h4 class="mt-3">{{ message }}</h4>
+  <a href="{{ url_for('index') }}" class="btn btn-accent mt-3">Back to Home</a>
+</div>
+{% endblock %}

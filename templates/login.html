@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Login — SkillSwap{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="card p-4">
+      <h3 class="fw-bold mb-1">Welcome back</h3>
+      <p class="text-muted mb-4">Log in to continue swapping skills.</p>
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" required autofocus>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-accent w-100">Login</button>
+      </form>
+      <p class="text-center text-muted mt-3 mb-0">
+        Don't have an account? <a href="{{ url_for('register') }}">Register</a>
+      </p>
+      <hr class="my-3">
+      <p class="text-center small text-muted mb-2">Quick demo login for judges</p>
+      <div class="d-flex flex-column gap-2">
+        <a href="{{ url_for('demo_login', email='rahul@skillswap.dev') }}" class="btn btn-sm btn-outline-accent d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-lightning-charge-fill"></i> Login as Rahul</span>
+          <span class="text-muted small">Teaches Python &amp; C++</span>
+        </a>
+        <a href="{{ url_for('demo_login', email='kabir@skillswap.dev') }}" class="btn btn-sm btn-outline-accent d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-lightning-charge-fill"></i> Login as Kabir</span>
+          <span class="text-muted small">Pending request + live chat</span>
+        </a>
+      </div>
+      <p class="text-center text-muted small mt-3 mb-0">
+        Manual: <code>rahul@skillswap.dev</code> / <code>password123</code>
+        (<a href="{{ url_for('seed_demo') }}">reset demo data</a>)
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

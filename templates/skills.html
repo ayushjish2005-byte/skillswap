@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}My Skills — SkillSwap{% endblock %}
+{% block content %}
+<h3 class="section-title mb-4">My Skills</h3>
+
+<div class="row g-4">
+  <div class="col-md-5">
+    <div class="card p-4">
+      <h6 class="fw-bold mb-3">Add a Skill</h6>
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label">Skill</label>
+          <select name="skill_id" class="form-select" required>
+            {% for category, skills in categories.items() %}
+              <optgroup label="{{ category }}">
+                {% for s in skills %}
+                  <option value="{{ s.id }}">{{ s.name }}</option>
+                {% endfor %}
+              </optgroup>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">I want to...</label>
+          <select name="type" class="form-select" required>
+            <option value="TEACH">Teach this</option>
+            <option value="LEARN">Learn this</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Level</label>
+          <select name="level" class="form-select">
+            <option>Beginner</option>
+            <option selected>Intermediate</option>
+            <option>Advanced</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-accent w-100">Add Skill</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-md-7">
+    <div class="card p-4 mb-3">
+      <h6 class="fw-bold mb-3">Skills I Can Teach</h6>
+      {% if user.teach_skills %}
+        {% for us in user.teach_skills %}
+          <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <span>{{ us.skill.name }} <span class="badge-level">{{ us.level }}</span></span>
+            <form method="POST" action="{{ url_for('remove_skill', user_skill_id=us.id) }}">
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>
+            </form>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted small mb-0">You haven't added any teaching skills yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="card p-4">
+      <h6 class="fw-bold mb-3">Skills I Want to Learn</h6>
+      {% if user.learn_skills %}
+        {% for us in user.learn_skills %}
+          <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <span>{{ us.skill.name }}</span>
+            <form method="POST" action="{{ url_for('remove_skill', user_skill_id=us.id) }}">
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>
+            </form>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted small mb-0">You haven't added any learning goals yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

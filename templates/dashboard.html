@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — SkillSwap{% endblock %}
+{% block content %}
+<h3 class="section-title mb-4">Hello, {{ user.name.split(' ')[0] }} 👋</h3>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="stat-card d-flex align-items-center gap-3">
+      <i class="bi bi-coin fs-2" style="color:var(--accent)"></i>
+      <div>
+        <div class="fs-4 fw-bold">{{ user.skill_coins }}</div>
+        <div class="text-muted small">SkillCoins</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card d-flex align-items-center gap-3">
+      <i class="bi bi-star-fill fs-2" style="color:#f5a623"></i>
+      <div>
+        <div class="fs-4 fw-bold">{{ user.display_rating if user.rating_count > 0 else "—" }}</div>
+        <div class="text-muted small">Rating ({{ user.rating_count }} reviews)</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card d-flex align-items-center gap-3">
+      <i class="bi bi-check2-circle fs-2" style="color:#1c8a3c"></i>
+      <div>
+        <div class="fs-4 fw-bold">{{ completed_count }}</div>
+        <div class="text-muted small">Completed Sessions</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="card p-3 h-100">
+      <h6 class="fw-bold">Skills I Teach</h6>
+      {% if user.teach_skills %}
+        {% for us in user.teach_skills %}
+          <span class="badge-skill">{{ us.skill.name }}<span class="badge-level">{{ us.level }}</span></span>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted small mb-0">None yet.</p>
+      {% endif %}
+
+      <h6 class="fw-bold mt-3">Skills I Want</h6>
+      {% if user.learn_skills %}
+        {% for us in user.learn_skills %}
+          <span class="badge-skill">{{ us.skill.name }}</span>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted small mb-0">None yet.</p>
+      {% endif %}
+      <a href="{{ url_for('edit_skills') }}" class="btn btn-sm btn-outline-accent mt-3">Manage Skills</a>
+    </div>
+  </div>
+
+  <div class="col-md-8">
+    <div class="card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold mb-0">AI Recommended Matches</h6>
+        <a href="{{ url_for('matches_page') }}" class="small">See all →</a>
+      </div>
+      {% if matches %}
+        {% for m in matches %}
+          <div class="d-flex align-items-center justify-content-between border rounded-3 p-3 mb-2">
+            <div class="d-flex align-items-center gap-3">
+              <div class="avatar-circle">{{ m.teacher.avatar_letter }}</div>
+              <div>
+                <div class="fw-bold">{{ m.teacher.name }}</div>
+                <div class="text-muted small">Teaches: {{ m.matched_skill.name }} &middot; <span class="star-rating">⭐ {{ m.teacher.display_rating if m.teacher.rating_count > 0 else "New" }}</span></div>
+              </div>
+            </div>
+            <div class="text-end">
+              <div class="match-score-badge mb-2">{{ m.score }}% Match</div><br>
+              <a href="{{ url_for('profile', user_id=m.teacher.id) }}" class="btn btn-sm btn-outline-accent">View Profile</a>
+              <a href="{{ url_for('new_session', teacher_id=m.teacher.id, skill_id=m.matched_skill.id) }}" class="btn btn-sm btn-accent">Request</a>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted small mb-0">No matches yet — add a skill you want to learn under "My Skills".</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mt-1">
+  <div class="col-md-6">
+    <div class="card p-3 h-100">
+      <h6 class="fw-bold mb-3">Upcoming Sessions</h6>
+      {% if upcoming %}
+        {% for s in upcoming %}
+          <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <div>
+              <div class="fw-semibold">{{ s.skill.name }}</div>
+              <div class="text-muted small">
+                {% if s.teacher_id == user.id %}with {{ s.student.name }} (you teach){% else %}with {{ s.teacher.name }} (you learn){% endif %}
+              </div>
+            </div>
+            <span class="status-pill status-{{ s.status }}">{{ s.status }}</span>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted small mb-0">No upcoming sessions.</p>
+      {% endif %}
+      <a href="{{ url_for('sessions_page') }}" class="small mt-2">Manage sessions →</a>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card p-3 h-100">
+      <h6 class="fw-bold mb-3">Recent Transactions</h6>
+      {% if recent_tx %}
+        {% for tx in recent_tx %}
+          <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <span class="text-muted small">{{ tx.description }}</span>
+            <span class="{{ 'tx-amount-pos' if tx.amount > 0 else 'tx-amount-neg' }}">{{ "+%d"|format(tx.amount) if tx.amount > 0 else tx.amount }}</span>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted small mb-0">No transactions yet.</p>
+      {% endif %}
+      <a href="{{ url_for('wallet') }}" class="small mt-2">View wallet →</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

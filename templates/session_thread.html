@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}{{ sess.skill.name }} — SkillSwap{% endblock %}
+{% block content %}
+{% set other = sess.other_party(user.id) %}
+
+<a href="{{ url_for('sessions_page') }}" class="small text-muted d-inline-block mb-3">
+  <i class="bi bi-arrow-left"></i> Back to Sessions
+</a>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card p-3 mb-3">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <div class="avatar-circle" style="width:40px;height:40px;font-size:1rem;">{{ other.avatar_letter }}</div>
+        <div>
+          <div class="fw-bold">{{ other.name }}</div>
+          <div class="text-muted small">
+            {% if sess.teacher_id == user.id %}Learning from you{% else %}Teaching you{% endif %}
+          </div>
+        </div>
+      </div>
+      <hr>
+      <div class="small text-muted mb-1"><strong>{{ sess.skill.name }}</strong></div>
+      <div class="small text-muted mb-1"><i class="bi bi-clock"></i> {{ sess.scheduled_at.strftime('%d %b %Y, %I:%M %p') }}</div>
+      <div class="small text-muted mb-2">{{ sess.duration }} min &middot; {{ sess.cost }} coins</div>
+      <span class="status-pill status-{{ sess.status }}">{{ sess.status }}</span>
+    </div>
+
+    <div class="card p-3">
+      <div class="fw-bold mb-2"><i class="bi bi-camera-video"></i> Meeting Link</div>
+      {% if sess.status == 'CANCELLED' %}
+        <p class="text-muted small mb-0">This session was cancelled.</p>
+      {% else %}
+        {% if sess.meeting_link %}
+          <a href="{{ sess.meeting_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-accent w-100 mb-2">
+            <i class="bi bi-box-arrow-up-right"></i> Join Session
+          </a>
+        {% else %}
+          <p class="text-muted small">No link shared yet. Paste a Google Meet, Zoom, or any other link below — either of you can add or update it.</p>
+        {% endif %}
+        <form method="POST" action="{{ url_for('set_meeting_link', session_id=sess.id) }}" class="d-flex gap-2">
+          <input type="text" name="meeting_link" class="form-control form-control-sm"
+                 placeholder="https://meet.google.com/..." value="{{ sess.meeting_link or '' }}">
+          <button type="submit" class="btn btn-sm btn-outline-accent flex-shrink-0">Save</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card p-3 d-flex flex-column" style="height: 32rem;">
+      <div class="fw-bold mb-2">Chat with {{ other.name }}</div>
+      <div class="chat-thread flex-grow-1 mb-3" id="chat-thread">
+        {% if not sess.messages %}
+          <p class="text-muted small text-center mt-4">No messages yet. Say hi and share how you'd like to connect.</p>
+        {% else %}
+          {% for m in sess.messages %}
+            <div class="msg-row {{ 'msg-me' if m.sender_id == user.id else 'msg-them' }}">
+              <div class="msg-bubble">
+                <div class="msg-body">{{ m.body }}</div>
+                <div class="msg-meta">{{ m.sender.name.split(' ')[0] }} &middot; {{ m.created_at.strftime('%d %b, %I:%M %p') }}</div>
+              </div>
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+
+      {% if sess.status != 'CANCELLED' %}
+      <form method="POST" action="{{ url_for('send_message', session_id=sess.id) }}" class="d-flex gap-2">
+        <input type="text" name="body" class="form-control" placeholder="Type a message..." autocomplete="off" required>
+        <button type="submit" class="btn btn-accent flex-shrink-0"><i class="bi bi-send"></i></button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  // Keep the thread scrolled to the latest message on load.
+  const threadEl = document.getElementById('chat-thread');
+  if (threadEl) { threadEl.scrollTop = threadEl.scrollHeight; }
+</script>
+{% endblock %}

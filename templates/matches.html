@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}AI Matches — SkillSwap{% endblock %}
+{% block content %}
+<h3 class="section-title mb-1">AI Recommended Matches</h3>
+<p class="text-muted mb-4">Ranked by match score — based on skill fit, level, teacher rating, and mutual exchange potential.</p>
+
+{% if not user.learn_skills %}
+  <div class="alert alert-warning">Add a skill you want to learn under <a href="{{ url_for('edit_skills') }}">My Skills</a> to get matches.</div>
+{% elif not matches %}
+  <div class="alert alert-info">No matches found right now. Check back once more students join, or broaden the skills you want to learn.</div>
+{% else %}
+<div class="row g-4">
+  {% for m in matches %}
+  <div class="col-md-6">
+    <div class="card p-4 h-100">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="avatar-circle">{{ m.teacher.avatar_letter }}</div>
+          <div>
+            <div class="fw-bold fs-5">{{ m.teacher.name }}</div>
+            <div class="text-muted small">{{ m.teacher.college or "" }}</div>
+            <div class="star-rating small">⭐ {{ m.teacher.display_rating if m.teacher.rating_count > 0 else "New teacher" }}</div>
+          </div>
+        </div>
+        <div class="match-score-badge">{{ m.score }}% Match</div>
+      </div>
+
+      <div class="mb-2">
+        <span class="text-muted small">Teaches:</span>
+        {% for us in m.teacher.teach_skills %}
+          <span class="badge-skill">{{ us.skill.name }}<span class="badge-level">{{ us.level }}</span></span>
+        {% endfor %}
+      </div>
+      <div class="mb-3">
+        <span class="text-muted small">Wants to learn:</span>
+        {% for us in m.teacher.learn_skills %}
+          <span class="badge-skill">{{ us.skill.name }}</span>
+        {% endfor %}
+      </div>
+
+      <div class="mb-3">
+        <div class="fw-semibold small mb-1">Why this match?</div>
+        {% for r in m.reasons %}
+          <div class="small"><span class="reason-check">✓</span>{{ r }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="d-flex gap-2 mt-auto">
+        <a href="{{ url_for('profile', user_id=m.teacher.id) }}" class="btn btn-outline-accent flex-fill">View Profile</a>
+        <a href="{{ url_for('new_session', teacher_id=m.teacher.id, skill_id=m.matched_skill.id) }}" class="btn btn-accent flex-fill">Request Session</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

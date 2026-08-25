@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Request Session — SkillSwap{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card p-4">
+      <h4 class="fw-bold mb-1">Request a Session</h4>
+      <p class="text-muted mb-4">
+        Learn <strong>{{ skill.name }}</strong> from <strong>{{ teacher.name }}</strong>
+        <span class="badge-level">{{ level }}</span>
+      </p>
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label">Duration</label>
+          <select name="duration" class="form-select" required>
+            {% for mins, cost in costs.items() %}
+              <option value="{{ mins }}">{{ mins }} minutes — {{ cost }} SkillCoins</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Preferred date &amp; time</label>
+          <input type="datetime-local" name="scheduled_at" class="form-control" required>
+        </div>
+        <div class="alert alert-info small">
+          SkillCoins are only deducted once the session is marked <strong>completed</strong> by both sides.
+        </div>
+        <button type="submit" class="btn btn-accent w-100">Send Request</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

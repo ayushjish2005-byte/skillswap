@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Sessions — SkillSwap{% endblock %}
+{% block content %}
+<h3 class="section-title mb-4">My Sessions</h3>
+
+{% if not all_sessions %}
+  <div class="alert alert-info">No sessions yet. Head to <a href="{{ url_for('matches_page') }}">AI Matches</a> to request one.</div>
+{% else %}
+<div class="d-flex flex-column gap-3">
+  {% for s in all_sessions %}
+  <div class="card p-3">
+    <div class="row align-items-center g-2">
+      <div class="col-md-4">
+        <div class="fw-bold">{{ s.skill.name }}</div>
+        <div class="text-muted small">
+          {% if s.teacher_id == user.id %}
+            Teaching {{ s.student.name }}
+          {% else %}
+            Learning from {{ s.teacher.name }}
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-md-3 text-muted small">
+        <i class="bi bi-clock"></i> {{ s.scheduled_at.strftime('%d %b %Y, %I:%M %p') }}<br>
+        {{ s.duration }} min &middot; {{ s.cost }} coins
+      </div>
+      <div class="col-md-2">
+        <span class="status-pill status-{{ s.status }}">{{ s.status }}</span>
+      </div>
+      <div class="col-md-3 text-md-end d-flex gap-2 justify-content-md-end flex-wrap">
+        {% if s.status != 'CANCELLED' %}
+          <a class="btn btn-sm btn-outline-accent position-relative" href="{{ url_for('session_thread', session_id=s.id) }}">
+            <i class="bi bi-chat-dots"></i> Message
+            {% if s.messages %}<span class="badge-msg-count">{{ s.messages|length }}</span>{% endif %}
+          </a>
+        {% endif %}
+        {% if s.status == 'REQUESTED' and s.teacher_id == user.id %}
+          <form method="POST" action="{{ url_for('accept_session', session_id=s.id) }}">
+            <button class="btn btn-sm btn-accent">Accept</button>
+          </form>
+          <form method="POST" action="{{ url_for('cancel_session', session_id=s.id) }}" data-confirm="Decline this session request?">
+            <button class="btn btn-sm btn-outline-danger">Decline</button>
+          </form>
+        {% elif s.status == 'REQUESTED' and s.student_id == user.id %}
+          <form method="POST" action="{{ url_for('cancel_session', session_id=s.id) }}" data-confirm="Cancel this session request?">
+            <button class="btn btn-sm btn-outline-danger">Cancel</button>
+          </form>
+        {% elif s.status == 'ACCEPTED' %}
+          <form method="POST" action="{{ url_for('complete_session', session_id=s.id) }}">
+            <button class="btn btn-sm btn-accent">Mark Completed</button>
+          </form>
+          <form method="POST" action="{{ url_for('cancel_session', session_id=s.id) }}" data-confirm="Cancel this session?">
+            <button class="btn btn-sm btn-outline-danger">Cancel</button>
+          </form>
+        {% elif s.status == 'COMPLETED' and s.student_id == user.id and not s.already_reviewed %}
+          <button class="btn btn-sm btn-outline-accent" type="button" data-bs-toggle="collapse" data-bs-target="#rate-{{ s.id }}">Rate Session</button>
+        {% elif s.status == 'COMPLETED' and s.already_reviewed %}
+          <span class="text-muted small">Rated</span>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if s.status == 'COMPLETED' and s.student_id == user.id and not s.already_reviewed %}
+    <div class="collapse mt-3" id="rate-{{ s.id }}">
+      <form method="POST" action="{{ url_for('rate_session', session_id=s.id) }}" class="border-top pt-3">
+        <div class="star-input mb-2">
+          <input type="hidden" name="rating" value="5">
+          {% for i in range(1,6) %}
+            <i class="bi bi-star-fill star-pick text-warning fs-4" data-value="{{ i }}" style="cursor:pointer;"></i>
+          {% endfor %}
+        </div>
+        <textarea name="comment" class="form-control mb-2" rows="2" placeholder="Optional feedback..."></textarea>
+        <button type="submit" class="btn btn-sm btn-accent">Submit Rating</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
